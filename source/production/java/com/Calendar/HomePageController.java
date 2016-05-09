@@ -1,6 +1,7 @@
 package com.Calendar;
 
 import com.DAO.EventDao;
+import com.DAO.LikedDao;
 import com.DAO.UserDao;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
@@ -107,18 +108,22 @@ public class HomePageController
    public String tableRefresh() {
          UserDao userDao = (UserDao) context.getBean("userDao");
          EventDao eventDao = (EventDao) context.getBean("eventDao");
-         try {
-            userDao.dropUserTable();
-               userDao.createUserTable();
-               if (debug) System.out.println("User table cleared");
-               eventDao.dropEventTable();
-               eventDao.createEventTable();
-               if (debug) System.out.println("Event table cleared");
-            } catch (CannotGetJdbcConnectionException e) {
-               e.printStackTrace();
-               if (debug) System.out.println("Database connection could not be established");
-               return "databaseError";
-            }
+         LikedDao likedDao= (LikedDao) context.getBean("likedDao");
+       try {
+           try{userDao.dropUserTable();}catch(Exception e){}
+           userDao.createUserTable();
+           if (debug) System.out.println("User table cleared");
+           try{eventDao.dropEventTable();}catch(Exception e){};
+           eventDao.createEventTable();
+           if (debug) System.out.println("Event table cleared");
+           try{likedDao.dropLikedTable();}catch(Exception e){}
+           likedDao.createLikedTable();
+           if (debug) System.out.println("Liked table cleared");
+       } catch (CannotGetJdbcConnectionException e) {
+           e.printStackTrace();
+           if (debug) System.out.println("Database connection could not be established");
+           return "databaseError";
+       }
       return "home";
    }
 

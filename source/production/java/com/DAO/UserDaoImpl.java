@@ -137,4 +137,21 @@ public class UserDaoImpl implements UserDao{
         String fname = (String)jdbcTemplate.queryForObject(query, input, String.class);
         return fname;
     }
+
+    /**
+     * selectUserID
+     * Grabs the unique identifier from the user table given the username
+     * @param username
+     * @return
+     */
+    @Override
+    public int selectUserID(String username) {
+        String query = "SELECT UserID FROM User WHERE username=?";
+        Object[] input = new Object[] {username};
+        jdbcTemplate = new JdbcTemplate(dataSource);
+        int uid = (int) jdbcTemplate.queryForObject(query, input, Integer.class);
+
+        return uid;
+    }
+
 }

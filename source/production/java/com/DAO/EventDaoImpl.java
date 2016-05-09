@@ -59,7 +59,7 @@ public class EventDaoImpl implements EventDao{
     @Override
     public boolean eventsExists(String username) {
         try {
-            String query = "SELECT Count(*) FROM Event WHERE EventUser=?";
+            String query = "SELECT Count(*) FROM Event AS e RIGHT JOIN Liked AS l ON e.EventUser=l.EventUser WHERE l.EventUser=?";
             Object[] input = new Object[]{username};
             jdbcTemplate = new JdbcTemplate(dataSource);
             int result = (int) jdbcTemplate.queryForObject(query, input, int.class);
@@ -140,7 +140,7 @@ public class EventDaoImpl implements EventDao{
 
     @Override
     public List<Event> selectAllEvent(String username) {
-        String query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event WHERE EventUser='"+username +"' ORDER BY EventDate ASC";
+        String query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e RIGHT JOIN Liked as l ON e.EventID=l.EventID WHERE l.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
         Object[] input = new Object[]{username};
         jdbcTemplate = new JdbcTemplate(dataSource);
         List<Event> events = jdbcTemplate.query(query, new EventMapper());

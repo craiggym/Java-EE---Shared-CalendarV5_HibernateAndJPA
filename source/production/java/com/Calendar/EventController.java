@@ -1,6 +1,8 @@
 package com.Calendar;
 
 import com.DAO.EventDao;
+import com.DAO.LikedDao;
+import com.DAO.UserDao;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -59,24 +61,24 @@ public class EventController {
     public String likedEvent(HttpSession session, @RequestParam("it") String it){
         int id = Integer.parseInt(it); // Parsed from HTML form
         String username = session.getAttribute("username").toString();
+
         List<Event> event = (List<Event>) session.getAttribute("eventsList");
+
         EventDao eventDao = (EventDao) context.getBean("eventDao");
+        UserDao userDao = (UserDao) context.getBean("userDao");
+        LikedDao likedDao = (LikedDao) context.getBean("likedDao");
         try {
             Event eventSelected = eventDao.getEventById(id);
-            /*
-            int eventID = event.get(id).getId();
-            String eventName = event.get(id).getEventName();
-            Date eventDate = event.get(id).getEventDate();
-            String eventDescription = event.get(id).getEventDescription();
-            String author = event.get(id).getEventAuthor();
-            */
-            Event createdNewEvent = new Event(eventSelected.getId(), eventSelected.getEventName(), eventSelected.getEventDate(), eventSelected.getEventDescription(), username, eventSelected.getEventAuthor()); // Create event object
+            int uid = userDao.selectUserID(username);
+            int authid = userDao.selectUserID(eventSelected.getEventAuthor());
+
+            LikedEvent likedEvent = new LikedEvent();
+            likedEvent.setEventID(eventSelected.getId());
+            likedEvent.setUsername(username);
+
+            likedDao.insertLiked(likedEvent);
 
 
-            // User doesn't have event, proceed with steps
-            if(!eventDao.hasEvent(createdNewEvent.getEventName(), username, createdNewEvent.getEventAuthor())) {
-                eventDao.insertEvent(createdNewEvent);
-            }
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Database connection could not be established");
@@ -104,6 +106,7 @@ public class EventController {
     public String createEvent(@ModelAttribute("event") Event event, Map<String, String> model, HttpSession session){
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("AppContext.xml"); // New AppContext pointing to xml config
         EventDao eventDao = (EventDao) context.getBean("eventDao"); // bean
+        LikedDao likedDao = (LikedDao) context.getBean("likedDao");
         String username = session.getAttribute("username").toString();
         event.setEventAuthor(username);
         event.setUsername(username);
@@ -131,6 +134,12 @@ public class EventController {
 
                 Event e = new Event(id, event.getEventName(), eventDateFormatted, event.getEventDescription(), event.getUsername(), event.getEventAuthor());
                 eventDao.insertEvent(e);
+
+                LikedEvent likedEvent = new LikedEvent();
+                likedEvent.setEventID(id);
+                likedEvent.setUsername(username);
+
+                likedDao.insertLiked(likedEvent);
 
             } catch (Exception e) {
                 e.printStackTrace();
