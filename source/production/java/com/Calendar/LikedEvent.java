@@ -1,9 +1,6 @@
 package com.Calendar;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -13,28 +10,40 @@ import java.io.Serializable;
 @Entity
 @Table(name="Liked")
 public class LikedEvent implements Serializable {
-    private static int eventID;
-    private static String username;
+    private int likeID;
+    private int eventID;
+    private String username;
 
     public LikedEvent() {}
 
     @Id
+    @GeneratedValue
+    @Column(name = "LikeID", nullable = false)
+    public int getLikeID() {
+        return likeID;
+    }
+
+    public void setLikeID(int likeID) {
+        this.likeID = likeID;
+    }
+
+
     @Column(name = "EventID")
-    public static int getEventID() {
+    public int getEventID() {
         return eventID;
     }
 
-    public static void setEventID(int eventID) {
-        LikedEvent.eventID = eventID;
+    public void setEventID(int eventID) {
+        this.eventID = eventID;
     }
 
     @Column(name = "EventUser")
-    public static String getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    public static void setUsername(String username) {
-        LikedEvent.username = username;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
 

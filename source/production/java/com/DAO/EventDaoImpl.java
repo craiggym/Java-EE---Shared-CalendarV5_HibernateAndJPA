@@ -62,7 +62,7 @@ public class EventDaoImpl implements EventDao{
             String query = "SELECT Count(*) FROM Event AS e RIGHT JOIN Liked AS l ON e.EventUser=l.EventUser WHERE l.EventUser=?";
             Object[] input = new Object[]{username};
             jdbcTemplate = new JdbcTemplate(dataSource);
-            int result = (int) jdbcTemplate.queryForObject(query, input, int.class);
+            int result = jdbcTemplate.queryForObject(query, input, int.class);
 
             if (debug) System.out.println("result of query(count from Event where username=user): " + result);
             if (result > 0) return true;
@@ -78,7 +78,7 @@ public class EventDaoImpl implements EventDao{
         try {
             String query = "SELECT Count(*) FROM Event";
             jdbcTemplate = new JdbcTemplate(dataSource);
-            int result = (int) jdbcTemplate.queryForObject(query, int.class);
+            int result = jdbcTemplate.queryForObject(query, int.class);
 
             if (debug) System.out.println("result of query(total events)): " + result);
             if (result > 0) return true;
@@ -94,7 +94,7 @@ public class EventDaoImpl implements EventDao{
         try {
             String query = "SELECT EventName FROM Event WHERE EventUser='"+username+"' AND EventName='"+eventname+"' AND EventCreator='"+creator+"'";
             jdbcTemplate = new JdbcTemplate(dataSource);
-            String result = (String) jdbcTemplate.queryForObject(query, String.class);
+            String result = jdbcTemplate.queryForObject(query, String.class);
 
             if (debug) System.out.println("result of hasEvent: " + result);
             return true;
@@ -114,7 +114,7 @@ public class EventDaoImpl implements EventDao{
         try {
             String query = "SELECT MAX(EventID) FROM Event";
             jdbcTemplate = new JdbcTemplate(dataSource);
-            int res = (int) jdbcTemplate.queryForObject(query, int.class);
+            int res = jdbcTemplate.queryForObject(query, int.class);
 
             return res;
         }

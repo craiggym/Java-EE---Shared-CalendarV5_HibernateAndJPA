@@ -2,13 +2,21 @@ package com.DAO;
 
 import com.Calendar.User;
 
-public interface UserDao {
+public interface UserDao  extends JpaDao<User, Long>{
+/*
+    int countUsers();
+
+
+
+
+*/
     void createUserTable();
     void dropUserTable();
-    void insertUser(User user);
-    int countUsers();
-    int selectUserID(String username);
-    String selectFirstName(String username);
+
     boolean userExists(String username);
+    void insertUser(User user);
+    int selectUserID(String username);
+    User selectUser(String username);
     boolean isAuthCorrect(String username, String password);
+    int countUsers();
 }

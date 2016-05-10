@@ -2,19 +2,27 @@ package com.DAO;
 
 import com.Calendar.User;
 import org.springframework.jdbc.core.JdbcTemplate;
-import javax.sql.DataSource;
+import org.springframework.util.Assert;
 
-public class UserDaoImpl implements UserDao{
+import javax.persistence.Query;
+import javax.sql.DataSource;
+import java.util.List;
+
+public class UserDaoImpl extends JpaDaoImpl<User, Long> implements UserDao{
     // class variables //
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
+    private UserDao userDao;
     boolean debug = true;
+
 
     // methods //
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-
+    public UserDaoImpl() {
+        super(User.class);
+    }
 
     /***************************************************************
      * Title: createUserTable
@@ -44,7 +52,7 @@ public class UserDaoImpl implements UserDao{
      * Description: Add a user to the database
      * @param user User object
      ****************************************************************************************/
-    @Override
+ /*   @Override
     public void insertUser(User user) {
         String query = "insert into User (userID, username, e_mail, password, first_name, last_name) values (?,?,?,?,?,?)";
         jdbcTemplate = new JdbcTemplate(dataSource);
@@ -59,7 +67,7 @@ public class UserDaoImpl implements UserDao{
      * @param username
      * @return true if the user exists in the database
      ****************************************************************************************/
-    @Override
+  /*  @Override
     public boolean userExists(String username) {
         try {
             String query = "SELECT username FROM User WHERE username=?";
@@ -83,7 +91,7 @@ public class UserDaoImpl implements UserDao{
      * countUser
      * @return count of users in user table
      ****************************************************************************************/
-    @Override
+ /*   @Override
     public int countUsers() {
         try {
             String query = "SELECT COUNT(*) FROM User";
@@ -105,7 +113,7 @@ public class UserDaoImpl implements UserDao{
      * @param password
      * @return true if authenticated correctly
      *****************************************************************************************/
-    @Override
+/*    @Override
     public boolean isAuthCorrect(String username, String password) {
         try {
             String query = "SELECT username FROM User WHERE username=?" + " AND password=?";
@@ -129,7 +137,7 @@ public class UserDaoImpl implements UserDao{
      * @param username
      * @return
      ****************************************************************************************/
-    @Override
+ /*   @Override
     public String selectFirstName(String username) {
         String query = "SELECT first_name FROM User WHERE username=?";
         Object[] input = new Object[] {username};
@@ -144,7 +152,7 @@ public class UserDaoImpl implements UserDao{
      * @param username
      * @return
      */
-    @Override
+/*    @Override
     public int selectUserID(String username) {
         String query = "SELECT UserID FROM User WHERE username=?";
         Object[] input = new Object[] {username};
@@ -153,5 +161,84 @@ public class UserDaoImpl implements UserDao{
 
         return uid;
     }
+*/
+    /*****************************************************************************
+     * Added for last assignment below
+     */
+    @Override
+    public boolean userExists(String username) {
+        try {
+            Query q = getEntityManager()
+                .createQuery("SELECT COUNT(*) FROM " + getPersistentClass().getSimpleName() + //If table name changes, this still works
+                        " u WHERE u.username = :username")
+                .setParameter("username", username);
 
+            int count = (int) q.getSingleResult();
+            return count >= 1;
+        }
+        catch(Exception e){
+            System.out.println("Bad things happened in the userExist query for user: "+username);
+        }
+        return false;
+
+    }
+
+    @Override
+    public void insertUser(User user) {
+        try{
+            userDao.save(user);
+        }catch(Exception e){
+            System.out.println("There was an issue with inserting the user " + user.getUsername());
+        }
+    }
+
+    @Override
+    public User selectUser(String username) {
+        Query q = getEntityManager()
+                .createQuery("SELECT u from " + getPersistentClass().getSimpleName() +
+                        " u WHERE u.username = :username")
+                .setParameter("username", username);
+
+        User user = null;
+        try{
+            user = (User) q.getSingleResult();
+        }
+        catch(Exception e){
+            System.out.println("User " + username + " not found!");
+        }
+        return user;
+    }
+
+    @Override
+    public int selectUserID(String username) {
+        try{
+            User user = selectUser(username);
+            return user.getUserID();
+        }catch(NullPointerException n){}
+        return -1;
+
+    }
+
+    @Override
+    public boolean isAuthCorrect(String username, String password) {
+        try{
+            User user = selectUser(username);
+            return (password == user.getPassword());
+        }catch(NullPointerException n){}
+        return false;
+
+    }
+
+    public int countUsers() {
+        Query q = getEntityManager()
+                .createQuery("SELECT COUNT(*) from " + getPersistentClass().getSimpleName() +
+                        " u");
+        try{
+            int result = (int)q.getSingleResult();
+            return result;
+        }
+        catch(NullPointerException n){}
+        return -1;
+
+    }
 }

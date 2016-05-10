@@ -23,7 +23,7 @@ public class LikedDaoImpl implements LikedDao{
 
     @Override
     public void createLikedTable() {
-        String query = "CREATE TABLE Liked(EventID int, EventUser VARCHAR(255));";
+        String query = "CREATE TABLE Liked(LikeID int, EventID int, EventUser VARCHAR(255));";
         jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.execute(query);
     }
@@ -38,9 +38,9 @@ public class LikedDaoImpl implements LikedDao{
 
     @Override
     public void insertLiked(LikedEvent likedEvent) {
-        String query = "INSERT INTO Liked (EventID, EventUser) VALUES (?,?);";
+        String query = "INSERT INTO Liked (LikeID, EventID, EventUser) VALUES (?,?,?);";
         jdbcTemplate = new JdbcTemplate(dataSource);
-        Object[] inputs = new Object[] {likedEvent.getEventID(), likedEvent.getUsername()};
+        Object[] inputs = new Object[] {likedEvent.getLikeID(), likedEvent.getEventID(), likedEvent.getUsername()};
         jdbcTemplate.update(query,inputs); // 'update' allows for non-static queries whereas execute wouldn't (e.g. '?')
     }
 

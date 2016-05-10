@@ -5,13 +5,10 @@
 http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
              version="2.1">
     <persistence-unit name="Shared_Calendar" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
-        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
-        <validation-mode>NONE</validation-mode>
-        <properties>
-            <property name="javax.persistence.schema-generation.database.action"
-                      value="none" />
-        </properties>
+
+        <class>com.Calendar.User</class>
+        <class>com.Calendar.LikedEvent</class>
+        <class>com.Calendar.Event</class>
+
     </persistence-unit>
 </persistence>

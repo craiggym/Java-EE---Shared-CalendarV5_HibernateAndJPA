@@ -6,6 +6,7 @@ import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.List;
 
+@Transactional
 public abstract class JpaDaoImpl<T, ID extends Serializable> implements JpaDao<T, ID> {
     private Class<T> persistentClass;
 
@@ -50,7 +51,7 @@ public abstract class JpaDaoImpl<T, ID extends Serializable> implements JpaDao<T
     @Transactional
     @Override
     public T findById(ID id) {
-        T entity = (T) getEntityManager().find(getPersistentClass(), id);
+        T entity = getEntityManager().find(getPersistentClass(), id);
         return entity;
     }
 

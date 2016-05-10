@@ -113,7 +113,7 @@ public class HomePageController
            try{userDao.dropUserTable();}catch(Exception e){}
            userDao.createUserTable();
            if (debug) System.out.println("User table cleared");
-           try{eventDao.dropEventTable();}catch(Exception e){};
+           try{eventDao.dropEventTable();}catch(Exception e){}
            eventDao.createEventTable();
            if (debug) System.out.println("Event table cleared");
            try{likedDao.dropLikedTable();}catch(Exception e){}
