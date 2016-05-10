@@ -1,12 +1,12 @@
 package com.Calendar;
 
 
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
-/**
- * Created by BHARATH on 2/26/2016.
- */
-public class Event{
+@Entity
+public class Event implements Serializable {
     private Integer id;
     private String eventName;
     private Date eventDate;
@@ -25,6 +25,9 @@ public class Event{
         this.eventAuthor = author;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "EventId")
     public Integer getId() {
         return id;
     }
@@ -33,6 +36,7 @@ public class Event{
         this.id = id;
     }
 
+    @Column(name = "EventName")
     public String getEventName() {
         return eventName;
     }
@@ -41,6 +45,8 @@ public class Event{
         this.eventName = eventName;
     }
 
+    @Temporal(TemporalType.DATE)
+    @Column(name = "EventDate")
     public Date getEventDate() {
         return eventDate;
     }
@@ -49,6 +55,7 @@ public class Event{
         this.eventDate = eventDate;
     }
 
+    @Column(name = "EventDesc")
     public String getEventDescription() {
         return eventDescription;
     }
@@ -57,6 +64,7 @@ public class Event{
         this.eventDescription = eventDescription;
     }
 
+    @Column(name = "EventUser")
     public String getUsername() {
         return username;
     }
@@ -65,6 +73,7 @@ public class Event{
         this.username = username;
     }
 
+    @Column(name = "EventCreator")
     public String getEventAuthor() {
         return eventAuthor;
     }
