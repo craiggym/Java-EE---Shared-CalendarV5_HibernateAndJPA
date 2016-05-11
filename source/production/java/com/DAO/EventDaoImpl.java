@@ -104,25 +104,6 @@ public class EventDaoImpl implements EventDao{
         }
     }
 
-    // count update//
-    /*****************************************************************************************
-     * countEvents
-     * @return count of users in user table
-     ****************************************************************************************/
-    @Override
-    public int countEvents() {
-        try {
-            String query = "SELECT MAX(EventID) FROM Event";
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            int res = jdbcTemplate.queryForObject(query, int.class);
-
-            return res;
-        }
-        catch(Exception e){
-            if (debug) System.out.println("error querying for count");
-            return 0;
-        }
-    }
 
     @Override
     public List<Event> selectRecentEvent(String username) {

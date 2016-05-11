@@ -23,6 +23,10 @@
         </property>
 
         <mapping resource="com/Calendar/User.hbm.temp.deleteMe.xml"/>
+        <mapping resource="com/Calendar/Event.hbm.temp.deleteMe.xml"/>
+        <mapping resource="com/Calendar/Like.hbm.temp.deleteMe.xml"/>
         <!--<mapping resource="User.hbm.xml"/>-->
+        <!--<mapping resource="Event.hbm.xml"/>-->
+        <!--<mapping resource="Liked.hbm.xml"/>-->
     </session-factory>
 </hibernate-configuration>

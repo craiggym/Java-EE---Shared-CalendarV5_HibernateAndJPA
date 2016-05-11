@@ -121,7 +121,7 @@ public class EventController {
         // Proceed if above conditions are met
         else {
             try { // catch occurs when HSQLDB is not established
-                int id = eventDao.countEvents()+1;
+                int id = 0;
 
 
                 Date eventDateFormatted = new Date();

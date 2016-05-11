@@ -8,7 +8,6 @@ public interface EventDao {
     void createEventTable();
     void dropEventTable();
     boolean eventsExists(String username);
-    int countEvents();
     boolean eventsExists();
     boolean hasEvent(String eventname, String username, String creator);
     List<Event> selectRecentEvent(String username);
