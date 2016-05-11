@@ -43,14 +43,30 @@ public class LikedDaoImpl implements LikedDao{
 
     @Override
     public void insertLiked(LikedEvent likedEvent) {
-        String query = "INSERT INTO Liked (LikeID, EventID, EventUser) VALUES (?,?,?);";
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        Object[] inputs = new Object[] {likedEvent.getLikeID(), likedEvent.getEventID(), likedEvent.getUsername()};
-        jdbcTemplate.update(query,inputs); // 'update' allows for non-static queries whereas execute wouldn't (e.g. '?')
+        try{
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        Session session = factory.openSession();
+        Transaction tx = null;
+        try{
+            tx = session.beginTransaction();
+            LikedEvent likedToAdd= new LikedEvent(likedEvent.getLikeID(),likedEvent.getEventID(),likedEvent.getUsername());
+            session.save(likedToAdd);
+            tx.commit();
+            System.out.println("insertion of liked event succeeded.");
+        }catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            System.out.println("The insertion of liked event: failed.");
+        }finally {
+            session.close();
+        }
     }
 
     @Override
-    public boolean likedExists() {
+    public boolean likedExists(String username) {
         try {
             factory = new Configuration().configure().buildSessionFactory();
         } catch (Throwable ex) {
@@ -60,8 +76,11 @@ public class LikedDaoImpl implements LikedDao{
         Session session = factory.openSession();
         Transaction tx = null;
         try {
-            String hql = "SELECT COUNT(*) FROM Liked";
+            String hql = "SELECT COUNT(*) FROM LikedEvent l WHERE l.username=:username";
             Query query = session.createQuery(hql);
+            query.setParameter("username",username);
+
+            System.out.println("returning true on likedevents count!");
             return (long) query.list().get(0) > 0;
         } catch (Exception e) {
             System.out.println("There are no liked events");

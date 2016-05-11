@@ -16,6 +16,12 @@ public class LikedEvent implements Serializable {
 
     public LikedEvent() {}
 
+    public LikedEvent(int likeID, int eventID, String username) {
+        this.likeID = likeID;
+        this.eventID = eventID;
+        this.username = username;
+    }
+
     @Id
     @GeneratedValue
     @Column(name = "LikeID", nullable = false)

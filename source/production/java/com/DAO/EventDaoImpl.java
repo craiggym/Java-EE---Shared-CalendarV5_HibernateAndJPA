@@ -92,13 +92,14 @@ public class EventDaoImpl implements EventDao{
             Query query = session.createQuery(hql);
             query.setParameter("username", username);
             System.out.println("returning True on eventsExist(username)");
-            return (long) query.list().get(0) > 0;
+            return true;
         }catch (Exception e) {
             System.out.println("There are no events for user: "+username+" or problem querying.");
             if (tx!=null) tx.rollback();
         }finally {
             session.close();
         }
+        System.out.println("oh no returning false");
         return false;
     }
 
@@ -134,16 +135,30 @@ public class EventDaoImpl implements EventDao{
         try{
             LikedDaoImpl likedDao = new LikedDaoImpl();
             String query;
-            if(likedDao.likedExists())
-                query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e RIGHT JOIN Liked as l ON e.EventID=l.EventID WHERE l.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
-            else query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e WHERE e.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
-            Object[] input = new Object[]{username};
+            query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e RIGHT JOIN Liked as l ON e.EventID=l.EventID WHERE l.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
+
             jdbcTemplate = new JdbcTemplate(dataSource);
             List<Event> events = jdbcTemplate.query(query, new EventMapper());
             return events;
         }catch(Exception e){
             System.out.println("error in selectAllEvents(username) method.");return null;}
 
+    }
+
+
+    @Override
+    public int countEvents() {
+        try {
+            String query = "SELECT MAX(EventID) FROM Event";
+            jdbcTemplate = new JdbcTemplate(dataSource);
+            int res = (int) jdbcTemplate.queryForObject(query, int.class);
+
+            return res;
+        }
+        catch(Exception e){
+            if (debug) System.out.println("error querying for count");
+            return 0;
+        }
     }
 
     @Override

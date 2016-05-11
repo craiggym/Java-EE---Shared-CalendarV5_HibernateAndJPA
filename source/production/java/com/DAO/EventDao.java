@@ -9,6 +9,7 @@ public interface EventDao {
     void dropEventTable();
     boolean eventsExists(String username);
     boolean hasEvent(String eventname, String username, String creator);
+    int countEvents();
     List<Event> selectAllEvent(String username);
     List<Event> selectAllEvents();
     Event getEventById(int id);

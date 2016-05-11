@@ -96,7 +96,6 @@ public class UserDaoImpl implements UserDao{
             System.out.println("insertion of user: " +user.getUsername() + " succeeded.");
         }catch (Exception e) {
             if (tx!=null) tx.rollback();
-            e.printStackTrace();
             System.out.println("The insertion of user: " +user.getUsername() + " failed.");
         }finally {
             session.close();
@@ -124,7 +123,7 @@ public class UserDaoImpl implements UserDao{
         }catch (Exception e) {
             System.out.println("There was a problem with the selectUser procedure");
             if (tx!=null) tx.rollback();
-            e.printStackTrace();
+
         }finally {
             session.close();
         }

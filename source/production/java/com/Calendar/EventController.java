@@ -19,7 +19,6 @@ public class EventController {
     private static String username;
     String userPage = "/userPersonal";
 
-
     /************************************************************************
      * Title: userHome
      * Views the user's home page
@@ -83,7 +82,6 @@ public class EventController {
             LikedEvent likedEvent = new LikedEvent();
             likedEvent.setEventID(eventSelected.getId());
             likedEvent.setUsername(username);
-
             likedDao.insertLiked(likedEvent);
 
 
@@ -129,7 +127,7 @@ public class EventController {
         // Proceed if above conditions are met
         else {
             try { // catch occurs when HSQLDB is not established
-                int id = 0;
+                int id = eventDao.countEvents()+1;
 
 
                 Date eventDateFormatted = new Date();
