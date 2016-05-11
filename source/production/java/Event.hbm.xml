@@ -5,9 +5,9 @@
 
 <!--suppress ALL -->
 <hibernate-mapping>
-    <class name="com.Calendar.User" table="User">
+    <class name="com.Calendar.Event" table="Event">
         <meta attribute="class-description">
-            This class contains the employee detail.
+            Maps from the Event class
         </meta>
         <id name="id" type="int" column="EventID">
             <generator class="increment"/>

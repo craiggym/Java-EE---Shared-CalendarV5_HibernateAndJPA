@@ -5,9 +5,9 @@
 
 <!--suppress ALL -->
 <hibernate-mapping>
-    <class name="com.Calendar.User" table="User">
+    <class name="com.Calendar.LikedEvent" table="Liked">
         <meta attribute="class-description">
-            This class contains the employee detail.
+            Maps from the Liked class.
         </meta>
         <id name="likeID" type="int" column="LikeID">
             <generator class="increment"/>

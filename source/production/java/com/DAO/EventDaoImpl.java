@@ -1,7 +1,13 @@
 package com.DAO;
 
 import com.Calendar.Event;
+import com.Calendar.LikedEvent;
 import com.Calendar.User;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -21,25 +27,11 @@ public class EventDaoImpl implements EventDao{
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
     private static boolean debug = true;
-
+    private static SessionFactory factory;
 
     // methods //
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    /***************************************************************
-     * Title: insertEvent
-     * Description: Add an event to the database
-     * @param event An Event object
-     ***************************************************************/
-    @Override
-    public void insertEvent(Event event) {
-        String query = "INSERT INTO Event (EventID, EventName, EventDate, EventDesc, EventUser, EventCreator) VALUES (?,?,?,?,?,?);";
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        Object[] inputs = new Object[] {event.getId(), event.getEventName(), event.getEventDate(), event.getEventDescription(), event.getUsername(), event.getEventAuthor()};
-        jdbcTemplate.update(query,inputs); // 'update' allows for non-static queries whereas execute wouldn't (e.g. '?')
-        if(debug) System.out.printf("Added event with name: %s and with user: %s and author: %s", event.getEventName(), event.getUsername(), event.getEventAuthor());
     }
 
     @Override
@@ -56,94 +48,124 @@ public class EventDaoImpl implements EventDao{
         jdbcTemplate.execute(query);
     }
 
+    /***************************************************************
+     * Title: insertEvent
+     * Description: Add an event to the database
+     * @param event An Event object
+     ***************************************************************/
     @Override
-    public boolean eventsExists(String username) {
-        try {
-            String query = "SELECT Count(*) FROM Event AS e RIGHT JOIN Liked AS l ON e.EventUser=l.EventUser WHERE l.EventUser=?";
-            Object[] input = new Object[]{username};
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            int result = jdbcTemplate.queryForObject(query, input, int.class);
-
-            if (debug) System.out.println("result of query(count from Event where username=user): " + result);
-            if (result > 0) return true;
-        } catch (Exception e) {
-            if (debug) System.out.println("Exception caught in sql query for event count");
-            return false;
+    public void insertEvent(Event event) {
+        try{
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
-        return false;
+        Session session = factory.openSession();
+        Transaction tx = null;
+        try{
+            tx = session.beginTransaction();
+            Event eventToAdd = new Event(event.getId(), event.getEventName(),event.getEventDate(), event.getEventDescription(),event.getUsername(),event.getEventAuthor());
+            session.save(eventToAdd);
+            tx.commit();
+            System.out.println("insertion of event: " +event.getEventName() + " succeeded.");
+        }catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            System.out.println("The insertion of event: " +event.getEventName() + " failed.");
+        }finally {
+            session.close();
+        }
     }
 
     @Override
-    public boolean eventsExists() {
-        try {
-            String query = "SELECT Count(*) FROM Event";
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            int result = jdbcTemplate.queryForObject(query, int.class);
-
-            if (debug) System.out.println("result of query(total events)): " + result);
-            if (result > 0) return true;
-        } catch (Exception e) {
-            if (debug) System.out.println("Exception caught in sql query for all_user event count");
-            return false;
+    public boolean eventsExists(String username) {
+        try{
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        Session session = factory.openSession();
+        Transaction tx = null;
+        try{
+            String hql = "SELECT COUNT(*) FROM Event e WHERE e.username=:username";
+            Query query = session.createQuery(hql);
+            query.setParameter("username", username);
+            System.out.println("returning True on eventsExist(username)");
+            return (long) query.list().get(0) > 0;
+        }catch (Exception e) {
+            System.out.println("There are no events for user: "+username+" or problem querying.");
+            if (tx!=null) tx.rollback();
+        }finally {
+            session.close();
         }
         return false;
     }
 
     @Override
     public boolean hasEvent(String eventname, String username, String creator) {
-        try {
-            String query = "SELECT EventName FROM Event WHERE EventUser='"+username+"' AND EventName='"+eventname+"' AND EventCreator='"+creator+"'";
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            String result = jdbcTemplate.queryForObject(query, String.class);
-
-            if (debug) System.out.println("result of hasEvent: " + result);
-            return true;
-        } catch (Exception e) {
-            if (debug) System.out.println("Exception caught in sql query for hasEvent!!");
-            return false;
+        try{
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
-    }
-
-
-    @Override
-    public List<Event> selectRecentEvent(String username) {
-        Date todays_date = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH,3);
-        Date beyond_date = cal.getTime();
-
-        String query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event WHERE EventUser='"+username +"' AND EventDate >= " + todays_date + "  ORDER BY EventDate ASC";
-        Object[] input = new Object[]{username};
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        List<Event> events = jdbcTemplate.query(query, new EventMapper());
-        return events;
+        Session session = factory.openSession();
+        Transaction tx = null;
+        try{
+            String hql = "SELECT e FROM Event e WHERE e.eventname=:eventname AND e.username=:username AND e.creator=:creator";
+            Query query = session.createQuery(hql);
+            query.setParameter("eventname", eventname);
+            query.setParameter("username", username);
+            query.setParameter("creator", creator);
+            Event eventResult = (Event) query.list().get(0);
+            return true;
+        }catch (Exception e) {
+            System.out.println("user does not have the event to be added");
+            if (tx!=null) tx.rollback();
+        }finally {
+            session.close();
+        }
+        return false;
     }
 
     @Override
     public List<Event> selectAllEvent(String username) {
-        String query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e RIGHT JOIN Liked as l ON e.EventID=l.EventID WHERE l.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
-        Object[] input = new Object[]{username};
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        List<Event> events = jdbcTemplate.query(query, new EventMapper());
-        return events;
+        try{
+            LikedDaoImpl likedDao = new LikedDaoImpl();
+            String query;
+            if(likedDao.likedExists())
+                query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e RIGHT JOIN Liked as l ON e.EventID=l.EventID WHERE l.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
+            else query = "SELECT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event AS e WHERE e.EventUser=\'"+username+"\' ORDER BY EventDate ASC";
+            Object[] input = new Object[]{username};
+            jdbcTemplate = new JdbcTemplate(dataSource);
+            List<Event> events = jdbcTemplate.query(query, new EventMapper());
+            return events;
+        }catch(Exception e){
+            System.out.println("error in selectAllEvents(username) method.");return null;}
+
     }
 
     @Override
     public List<Event> selectAllEvents() {
-        String query = "SELECT DISTINCT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event WHERE EventUser=EventCreator ORDER BY EventDate ASC";
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        List<Event> events = jdbcTemplate.query(query, new EventMapper());
-        return events;
+        try {
+            String query = "SELECT DISTINCT EventID, EventName, EventDate, EventDesc, EventUser, EventCreator FROM Event WHERE EventUser=EventCreator ORDER BY EventDate ASC";
+            jdbcTemplate = new JdbcTemplate(dataSource);
+            List<Event> events = jdbcTemplate.query(query, new EventMapper());
+            return events;
+        }catch(Exception e){System.out.println("error in selectAllEvents() method.");return null;}
     }
 
     @Override
     public Event getEventById(int id) {
-        String query = "select EventID, EventName, EventDate, EventDesc, EventUser, EventCreator from Event where EventID=" + id + " limit 1";
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        List<Event> events = jdbcTemplate.query(query, new EventMapper());
-        if (events != null && events.size() > 0) {
-            return events.get(0);
-        }
-        return null;
+        try {
+            String query = "select EventID, EventName, EventDate, EventDesc, EventUser, EventCreator from Event where EventID=" + id + " limit 1";
+            jdbcTemplate = new JdbcTemplate(dataSource);
+            List<Event> events = jdbcTemplate.query(query, new EventMapper());
+            if (events != null && events.size() > 0) {
+                return events.get(0);
+            }
+            return null;
+        }catch(Exception e){System.out.println("error in getEventById(id) method.");return null;}
     }
 }

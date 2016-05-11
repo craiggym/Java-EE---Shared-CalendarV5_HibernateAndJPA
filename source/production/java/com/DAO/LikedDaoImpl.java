@@ -2,6 +2,11 @@ package com.DAO;
 
 import com.Calendar.Event;
 import com.Calendar.LikedEvent;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -14,7 +19,7 @@ public class LikedDaoImpl implements LikedDao{
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
     private static boolean debug = true;
-
+    private static SessionFactory factory;
 
     // methods //
     public void setDataSource(DataSource dataSource) {
@@ -44,4 +49,26 @@ public class LikedDaoImpl implements LikedDao{
         jdbcTemplate.update(query,inputs); // 'update' allows for non-static queries whereas execute wouldn't (e.g. '?')
     }
 
+    @Override
+    public boolean likedExists() {
+        try {
+            factory = new Configuration().configure().buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        Session session = factory.openSession();
+        Transaction tx = null;
+        try {
+            String hql = "SELECT COUNT(*) FROM Liked";
+            Query query = session.createQuery(hql);
+            return (long) query.list().get(0) > 0;
+        } catch (Exception e) {
+            System.out.println("There are no liked events");
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+        }
+        return false;
+    }
 }

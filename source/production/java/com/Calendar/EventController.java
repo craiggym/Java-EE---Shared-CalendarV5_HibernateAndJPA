@@ -32,23 +32,31 @@ public class EventController {
         EventDao eventDao = (EventDao) context.getBean("eventDao");
         if (eventDao.eventsExists(session.getAttribute("username").toString()) == false) model.put("events", null);
         else {
-            List<Event> events = eventDao.selectAllEvent(session.getAttribute("username").toString());
+            String username = session.getAttribute("username").toString();
+            List<Event> events = eventDao.selectAllEvent(username);
 
             // Logic for recent events //
             List<Event> recentEvents = new ArrayList<>();
 
-            int iterator = 0;
-            Date todays_date = new Date();
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.MONTH,3);
-            Date beyond_date = cal.getTime();
-            for(Event e:events){
-                Date eventDate = e.getEventDate();
-                if(eventDate.after(todays_date) && eventDate.before(beyond_date))
-                    recentEvents.add(events.get(iterator));
-                iterator++;
+            try {
+                int iterator = 0;
+                Date todays_date = new Date();
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.MONTH, 3);
+                Date beyond_date = cal.getTime();
+                for (Event e : events) {
+                    System.out.println("testing what's inside set: " + e.getEventName());
+                }
+                for (Event e : events) {
+                    Date eventDate = e.getEventDate();
+                    if (eventDate.after(todays_date) && eventDate.before(beyond_date))
+                        recentEvents.add(events.get(iterator));
+                    iterator++;
+                }
+                model.put("events", recentEvents);
+            }catch(Exception e) {
+                System.out.println("there was an issue in putting the events in the model.");
             }
-            model.put("events", recentEvents);
         }
         return userPage;
     }

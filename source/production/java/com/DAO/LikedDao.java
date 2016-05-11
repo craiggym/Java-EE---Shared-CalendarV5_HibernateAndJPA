@@ -9,4 +9,5 @@ public interface LikedDao {
     void insertLiked(LikedEvent likedEvent);
     void createLikedTable();
     void dropLikedTable();
+    boolean likedExists();
 }
