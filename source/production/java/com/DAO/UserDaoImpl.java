@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 
 
 import javax.sql.DataSource;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -49,121 +50,6 @@ public class UserDaoImpl implements UserDao{
         jdbcTemplate.execute(query);
     }
 
-    /*****************************************************************************************
-     * Title: insertUser
-     * Description: Add a user to the database
-     * @param user User object
-     ****************************************************************************************/
- /*   @Override
-    public void insertUser(User user) {
-        String query = "insert into User (userID, username, e_mail, password, first_name, last_name) values (?,?,?,?,?,?)";
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        Object[] inputs = new Object[] {user.getUserID(), user.getUsername(),user.getE_mail(), user.getPassword(), user.getFirst_name(), user.getLast_name()};
-        jdbcTemplate.update(query,inputs); // 'update' allows for non-static queries whereas execute wouldn't (e.g. '?')
-        if(debug) System.out.printf("User: %s added with password: %s", user.getUsername(), user.getPassword());
-    }
-
-    // Boolean checking //
-    /*****************************************************************************************
-     * userExists
-     * @param username
-     * @return true if the user exists in the database
-     ****************************************************************************************/
-  /*  @Override
-    public boolean userExists(String username) {
-        try {
-            String query = "SELECT username FROM User WHERE username=?";
-            Object[] input = new Object[]{username};
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            String uname = (String) jdbcTemplate.queryForObject(query, input, String.class);
-
-            if(debug) {
-                System.out.println("result of query: " + uname);
-                System.out.println("User exists");
-            }
-            return true;
-        }
-        catch(Exception e){
-            if (debug) System.out.println("User does not exist");
-            return false;
-        }
-    }
-    // count update//
-    /*****************************************************************************************
-     * countUser
-     * @return count of users in user table
-     ****************************************************************************************/
- /*   @Override
-    public int countUsers() {
-        try {
-            String query = "SELECT COUNT(*) FROM User";
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            int res = (int) jdbcTemplate.queryForObject(query, int.class);
-
-            return res;
-        }
-        catch(Exception e){
-            if (debug) System.out.println("error querying for count");
-            return 0;
-        }
-    }
-
-    /*****************************************************************************************
-     * isAuthCorrect
-     * Authenticates using two strings passed in parameters
-     * @param username
-     * @param password
-     * @return true if authenticated correctly
-     *****************************************************************************************/
-/*    @Override
-    public boolean isAuthCorrect(String username, String password) {
-        try {
-            String query = "SELECT username FROM User WHERE username=?" + " AND password=?";
-            Object[] input = new Object[]{username,password};
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            String q_result = (String) jdbcTemplate.queryForObject(query, input, String.class);
-
-            if(debug)System.out.println("Authentication for " + username + " correct!(result="+q_result +")");
-            return true;
-        }
-        catch(Exception e){
-            if (debug) System.out.println("Authentication for " + username + " incorrect");
-            return false;
-        }
-    }
-
-    // Select statements //
-    /*****************************************************************************************
-     * selectFirstName
-     * Selects the user's first name
-     * @param username
-     * @return
-     ****************************************************************************************/
- /*   @Override
-    public String selectFirstName(String username) {
-        String query = "SELECT first_name FROM User WHERE username=?";
-        Object[] input = new Object[] {username};
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        String fname = (String)jdbcTemplate.queryForObject(query, input, String.class);
-        return fname;
-    }
-
-    /**
-     * selectUserID
-     * Grabs the unique identifier from the user table given the username
-     * @param username
-     * @return
-     */
-/*    @Override
-    public int selectUserID(String username) {
-        String query = "SELECT UserID FROM User WHERE username=?";
-        Object[] input = new Object[] {username};
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        int uid = (int) jdbcTemplate.queryForObject(query, input, Integer.class);
-
-        return uid;
-    }
-*/
     /*****************************************************************************
      * Added for last assignment below
      */
@@ -181,16 +67,14 @@ public class UserDaoImpl implements UserDao{
         try {
             tx = session.beginTransaction();
             User user = selectUser(username);
-            String uname = user.getUsername(); // Test for null. Goes into catch if null
-            tx.commit();
             session.close();
-            return true;
+            if(user == null) return false;
         }catch(Exception e){
             tx.rollback();
             session.close();
             System.out.println("User not in database");
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -228,22 +112,24 @@ public class UserDaoImpl implements UserDao{
             System.err.println("Failed to create sessionFactory object." + ex);
             throw new ExceptionInInitializerError(ex);
         }
+        System.out.println("Entered selectUser with user " + username);
         Session session = factory.openSession();
         Transaction tx = null;
-
-        try {
-            tx = session.beginTransaction();
-            User user = (User) session.createQuery("FROM User WHERE Username = \'"+username+"\'").list();
-            tx.commit();
-            return user;
-        }
-        catch(Exception e){
-            tx.rollback();
-            System.out.println("CATCH in selecting user: " + username);
+        try{
+            String hql = "SELECT u FROM User u WHERE u.username= :username";
+            Query query = session.createQuery(hql);
+            query.setParameter("username", username);
+            User u = (User) query.list().get(0);
+            return u;
+        }catch (Exception e) {
+            System.out.println("There was a problem with the selectUser procedure");
+            if (tx!=null) tx.rollback();
+            e.printStackTrace();
         }finally {
             session.close();
         }
         return null;
+
     }
 
     @Override
@@ -251,7 +137,7 @@ public class UserDaoImpl implements UserDao{
         try{
             User user = selectUser(username);
             return user.getUserID();
-        }catch(NullPointerException n){}
+        }catch(Exception e){}
         return -1;
 
     }
@@ -259,34 +145,29 @@ public class UserDaoImpl implements UserDao{
     @Override
     public boolean isAuthCorrect(String username, String password) {
         try{
-            User user = selectUser(username);
-            return (password == user.getPassword());
-        }catch(NullPointerException n){}
-        return false;
-
-    }
-
-    public int countUsers() {
-        try{
             factory = new Configuration().configure().buildSessionFactory();
         }catch (Throwable ex) {
             System.err.println("Failed to create sessionFactory object." + ex);
             throw new ExceptionInInitializerError(ex);
         }
+
         Session session = factory.openSession();
         Transaction tx = null;
+        try{
+            String hql = "SELECT u FROM User u WHERE u.username= :username AND u.password=:password";
+            Query query = session.createQuery(hql);
+            query.setParameter("username", username);
+            query.setParameter("password", password);
+            User u = (User) query.list().get(0);
+            if (u != null){
+                System.out.println("User is authorized");
+                return true;
+            }
+        }catch(Exception e){}
+        System.out.println("returning false on AUTH");
+        return false;
 
-        try {
-            tx = session.beginTransaction();
-            int theCount = session.createQuery("SELECT COUNT(*) FROM User").getFirstResult();
-            tx.commit();
-            return theCount;
-        }catch(Exception e){
-            tx.rollback();
-            System.out.println("CATCH on counting users in database");
-        }finally {
-            session.close();
-        }
-        return -1;
     }
+
+
 }

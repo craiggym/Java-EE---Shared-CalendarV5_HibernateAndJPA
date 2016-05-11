@@ -3,8 +3,6 @@ package com.Calendar;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "User")
 public class User implements Serializable{
 
 
@@ -16,9 +14,7 @@ public class User implements Serializable{
     private String last_name;
     private int userID = 0;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "UserID")
+
     public int getUserID() {
         return userID;
     }
@@ -39,7 +35,6 @@ public class User implements Serializable{
         this.password = password;
     }
 
-    @Column(name = "Password")
     public String getPassword() {
         return password;
     }
@@ -64,22 +59,22 @@ public class User implements Serializable{
         return username;
     }
 
-    @Column(name = "E_Mail")
+
     public String getE_mail() {
         return e_mail;
     }
 
-    @Column(name = "First_Name")
+
     public String getFirst_name() {
         return first_name;
     }
 
-    @Column(name = "Last_Name")
+
     public String getLast_name() {
         return last_name;
     }
 
-    // Consructor //
+    // Constructor //
 
     public User(int userID, String username, String e_mail, String password, String first_name, String last_name) {
         this.userID = userID;

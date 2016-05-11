@@ -18,5 +18,4 @@ public interface UserDao {
     int selectUserID(String username);
     User selectUser(String username);
     boolean isAuthCorrect(String username, String password);
-    int countUsers();
 }
