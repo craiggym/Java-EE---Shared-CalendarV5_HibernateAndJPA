@@ -6,8 +6,14 @@
         <context:component-scan base-package="com.Calendar"/>
 
 
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
 
-    <import resource="datasource-config.xml" />
+        <property name="driverClassName" value="org.hsqldb.jdbc.JDBCDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://localhost/cpsc476;ifexists=true"/>
+        <property name="username" value="SA"/>
+        <property name="password" value="Passw0rd"/>
+    </bean>
 
     <bean id="userDao" class="com.DAO.UserDaoImpl">
         <property name="dataSource" ref="dataSource"/>

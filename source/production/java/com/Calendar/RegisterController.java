@@ -75,7 +75,7 @@ public class RegisterController {
 
 
                     // Create new user and set the attributes using local variables. //
-                    user.setUserID(userDao.countUsers()+1);
+                    user.setUserID(0);
                     userDao.insertUser(user); // Inserts the user into HSQLDB table
 
                     model.put("duplicate", "false");

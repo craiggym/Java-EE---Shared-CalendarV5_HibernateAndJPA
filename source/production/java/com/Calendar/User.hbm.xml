@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<!--suppress ALL -->
+<hibernate-mapping>
+    <class name="com.Calendar.User" table="User">
+        <meta attribute="class-description">
+            This class contains the employee detail.
+        </meta>
+        <id name="userID" type="int" column="UserID">
+            <generator class="increment"/>
+        </id>
+        <property name="username" column="Username" type="string"/>
+        <property name="e_mail" column="E_Mail" type="string"/>
+        <property name="password" column="Password" type="string"/>
+        <property name="first_name" column="First_Name" type="string"/>
+        <property name="last_name" column="Last_Name" type="string"/>
+
+    </class>
+</hibernate-mapping>

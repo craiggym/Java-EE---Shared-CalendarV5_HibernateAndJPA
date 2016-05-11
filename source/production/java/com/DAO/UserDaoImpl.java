@@ -1,28 +1,30 @@
 package com.DAO;
 
 import com.Calendar.User;
+import org.hibernate.*;
+import org.hibernate.cfg.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 
-import javax.persistence.Query;
+
 import javax.sql.DataSource;
 import java.util.List;
 
-public class UserDaoImpl extends JpaDaoImpl<User, Long> implements UserDao{
+
+public class UserDaoImpl implements UserDao{
     // class variables //
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
     private UserDao userDao;
     boolean debug = true;
+    private static SessionFactory factory;
 
 
     // methods //
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    public UserDaoImpl() {
-        super(User.class);
-    }
+
 
     /***************************************************************
      * Title: createUserTable
@@ -167,46 +169,81 @@ public class UserDaoImpl extends JpaDaoImpl<User, Long> implements UserDao{
      */
     @Override
     public boolean userExists(String username) {
-        try {
-            Query q = getEntityManager()
-                .createQuery("SELECT COUNT(*) FROM " + getPersistentClass().getSimpleName() + //If table name changes, this still works
-                        " u WHERE u.username = :username")
-                .setParameter("username", username);
-
-            int count = (int) q.getSingleResult();
-            return count >= 1;
+        try{
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
-        catch(Exception e){
-            System.out.println("Bad things happened in the userExist query for user: "+username);
+        Session session = factory.openSession();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            User user = selectUser(username);
+            String uname = user.getUsername(); // Test for null. Goes into catch if null
+            tx.commit();
+            session.close();
+            return true;
+        }catch(Exception e){
+            tx.rollback();
+            session.close();
+            System.out.println("User not in database");
         }
         return false;
-
     }
 
     @Override
-    public void insertUser(User user) {
+    public int insertUser(User user) {
         try{
-            userDao.save(user);
-        }catch(Exception e){
-            System.out.println("There was an issue with inserting the user " + user.getUsername());
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
+        Session session = factory.openSession();
+        Transaction tx = null;
+        int employeeID=-1;
+        try{
+            tx = session.beginTransaction();
+            User userToAdd = new User(user.getUserID(), user.getUsername(), user.getE_mail(), user.getPassword(),user.getFirst_name(), user.getLast_name());
+            session.save(userToAdd);
+            tx.commit();
+            System.out.println("insertion of user: " +user.getUsername() + " succeeded.");
+        }catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            e.printStackTrace();
+            System.out.println("The insertion of user: " +user.getUsername() + " failed.");
+        }finally {
+            session.close();
+        }
+        return employeeID;
     }
 
     @Override
     public User selectUser(String username) {
-        Query q = getEntityManager()
-                .createQuery("SELECT u from " + getPersistentClass().getSimpleName() +
-                        " u WHERE u.username = :username")
-                .setParameter("username", username);
-
-        User user = null;
         try{
-            user = (User) q.getSingleResult();
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        Session session = factory.openSession();
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+            User user = (User) session.createQuery("FROM User WHERE Username = \'"+username+"\'").list();
+            tx.commit();
+            return user;
         }
         catch(Exception e){
-            System.out.println("User " + username + " not found!");
+            tx.rollback();
+            System.out.println("CATCH in selecting user: " + username);
+        }finally {
+            session.close();
         }
-        return user;
+        return null;
     }
 
     @Override
@@ -230,15 +267,26 @@ public class UserDaoImpl extends JpaDaoImpl<User, Long> implements UserDao{
     }
 
     public int countUsers() {
-        Query q = getEntityManager()
-                .createQuery("SELECT COUNT(*) from " + getPersistentClass().getSimpleName() +
-                        " u");
         try{
-            int result = (int)q.getSingleResult();
-            return result;
+            factory = new Configuration().configure().buildSessionFactory();
+        }catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
         }
-        catch(NullPointerException n){}
-        return -1;
+        Session session = factory.openSession();
+        Transaction tx = null;
 
+        try {
+            tx = session.beginTransaction();
+            int theCount = session.createQuery("SELECT COUNT(*) FROM User").getFirstResult();
+            tx.commit();
+            return theCount;
+        }catch(Exception e){
+            tx.rollback();
+            System.out.println("CATCH on counting users in database");
+        }finally {
+            session.close();
+        }
+        return -1;
     }
 }
