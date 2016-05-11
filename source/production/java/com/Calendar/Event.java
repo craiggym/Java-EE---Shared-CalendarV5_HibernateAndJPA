@@ -5,7 +5,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
-@Entity
 public class Event implements Serializable {
     private Integer id;
     private String eventName;
@@ -26,9 +25,7 @@ public class Event implements Serializable {
         this.eventAuthor = author;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "EventId")
+
     public Integer getId() {
         return id;
     }
@@ -37,7 +34,7 @@ public class Event implements Serializable {
         this.id = id;
     }
 
-    @Column(name = "EventName")
+
     public String getEventName() {
         return eventName;
     }
@@ -46,8 +43,7 @@ public class Event implements Serializable {
         this.eventName = eventName;
     }
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = "EventDate")
+
     public Date getEventDate() {
         return eventDate;
     }
@@ -56,7 +52,7 @@ public class Event implements Serializable {
         this.eventDate = eventDate;
     }
 
-    @Column(name = "EventDesc")
+
     public String getEventDescription() {
         return eventDescription;
     }
@@ -65,7 +61,7 @@ public class Event implements Serializable {
         this.eventDescription = eventDescription;
     }
 
-    @Column(name = "EventUser")
+
     public String getUsername() {
         return username;
     }
@@ -74,7 +70,7 @@ public class Event implements Serializable {
         this.username = username;
     }
 
-    @Column(name = "EventCreator")
+
     public String getEventAuthor() {
         return eventAuthor;
     }

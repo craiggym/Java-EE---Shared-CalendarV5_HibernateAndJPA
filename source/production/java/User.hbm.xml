@@ -19,4 +19,28 @@
         <property name="last_name" column="Last_Name" type="string"/>
 
     </class>
+    <class name="com.Calendar.LikedEvent" table="Liked">
+        <meta attribute="class-description">
+            Maps from the Liked class.
+        </meta>
+        <id name="likeID" type="int" column="LikeID">
+            <generator class="increment"/>
+        </id>
+        <property name="eventID" column="EventID" type="int"/>
+        <property name="username" column="EventUser" type="string"/>
+    </class>
+    <class name="com.Calendar.Event" table="Event">
+        <meta attribute="class-description">
+            Maps from the Event class
+        </meta>
+        <id name="id" type="int" column="EventID">
+            <generator class="increment"/>
+        </id>
+        <property name="eventName" column="EventName" type="string"/>
+        <property name="eventDate" column="EventDate" type="date"/>
+        <property name="eventDescription" column="EventDesc" type="string"/>
+        <property name="username" column="EventUser" type="string"/>
+        <property name="eventAuthor" column="EventCreator" type="string"/>
+
+    </class>
 </hibernate-mapping>

@@ -88,11 +88,11 @@ public class EventDaoImpl implements EventDao{
         Session session = factory.openSession();
         Transaction tx = null;
         try{
-            String hql = "SELECT COUNT(*) FROM Event e WHERE e.username=:username";
+            String hql = "SELECT COUNT(*) FROM LikedEvent l WHERE l.username=:username";
             Query query = session.createQuery(hql);
             query.setParameter("username", username);
             System.out.println("returning True on eventsExist(username)");
-            return true;
+            return (long) query.list().get(0) > 0;
         }catch (Exception e) {
             System.out.println("There are no events for user: "+username+" or problem querying.");
             if (tx!=null) tx.rollback();

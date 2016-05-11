@@ -5,6 +5,7 @@
 
 <!--suppress ALL -->
 <hibernate-mapping>
+
     <class name="com.Calendar.LikedEvent" table="Liked">
         <meta attribute="class-description">
             Maps from the Liked class.
@@ -15,4 +16,5 @@
         <property name="eventID" column="EventID" type="int"/>
         <property name="username" column="EventUser" type="string"/>
     </class>
+
 </hibernate-mapping>
